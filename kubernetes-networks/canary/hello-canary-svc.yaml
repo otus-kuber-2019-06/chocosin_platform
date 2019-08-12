@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-canary-svc
+spec:
+  selector:
+    app: hello
+    branch: canary
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
