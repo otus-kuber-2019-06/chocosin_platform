@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-canary
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 100%
+  selector:
+    matchLabels:
+      app: hello
+      branch: canary
+  template:
+    metadata:
+      name: hello
+      labels:
+        app: hello
+        branch: canary
+    spec:
+      volumes:
+        - name: app
+          emptyDir: {}
+      initContainers:
+        - name: init
+          image: busybox:1.31.0
+          volumeMounts:
+            - mountPath: /app
+              name: app
+          command: ['sh', '-c', 'echo "hello, im canary" >> /app/index.html']
+      containers:
+        - name: web
+          image: jake96785/nginx-app
+          readinessProbe:
+            httpGet:
+              port: 8000
+              path: /index.html
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+          volumeMounts:
+            - mountPath: /app
+              name: app
